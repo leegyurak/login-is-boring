@@ -8,6 +8,8 @@ django = "3.2"
 djangorestframework = "*"
 django-environ = "*"
 djangorestframework-simplejwt = "*"
+celery = "*"
+redis = "*"
 
 [dev-packages]
 

@@ -11,6 +11,7 @@ class SignUpSerializer(serializers.ModelSerializer):
     email = serializers.EmailField(help_text='이메일 입력')
     password = serializers.CharField(write_only=True, help_text='비밀번호 입력, 최소 8자, 영어 숫자 및 특수문자 한개 필수 포함.')
     active_type = serializers.CharField(read_only=True, source='active_type.name', help_text='활성화 정보')
+    verify_code = serializers.CharField(read_only=True, help_text='회원 가입시 생성되는 인증 코드')
 
     def validate_username(self, username):
         regex = re.compile('^[가-힣]{2,4}$')
@@ -43,4 +44,4 @@ class SignUpSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = User
-        fields = ('username', 'email', 'password', 'nickname', 'active_type')
+        fields = ('username', 'email', 'password', 'nickname', 'active_type', 'verify_code')
