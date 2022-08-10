@@ -6,7 +6,6 @@ from rest_framework import serializers
 
 User = get_user_model()
 
-
 class SignUpSerializer(serializers.ModelSerializer):
     email = serializers.EmailField(help_text='이메일 입력')
     password = serializers.CharField(write_only=True, help_text='비밀번호 입력, 최소 8자, 영어 숫자 및 특수문자 한개 필수 포함.')
@@ -45,3 +44,23 @@ class SignUpSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
         fields = ('username', 'email', 'password', 'nickname', 'active_type', 'verify_code')
+
+
+class EmailVerifySerializer(serializers.Serializer):
+    verify_code = serializers.CharField(help_text='회원 가입시 생성되는 인증 코드')
+
+    def update(self, instance, validated_data):
+        verify_code = validated_data['verify_code']
+
+        if instance.active_type_id == 2:
+            raise serializers.ValidationError({'detail': 'This user is already verified.'})
+
+        if instance.verify_code == verify_code:
+            instance.active_type_id = 2
+            instance.verify_code = None
+
+            instance.save(update_fields=('active_type', 'verify_code'))
+        else:
+            raise serializers.ValidationError({'detail': 'verify code is not correct.'})
+
+        return instance
