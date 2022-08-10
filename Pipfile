@@ -10,8 +10,11 @@ django-environ = "*"
 djangorestframework-simplejwt = "*"
 celery = "*"
 redis = "*"
+django-filter = "*"
 
 [dev-packages]
+pytest = "*"
+model-bakery = "*"
 
 [requires]
 python_version = "3.7"
