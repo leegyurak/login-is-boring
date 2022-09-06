@@ -12,7 +12,11 @@ class SignUpSerializer(serializers.ModelSerializer):
     active_type = serializers.CharField(read_only=True, source='active_type.name', help_text='활성화 정보')
     verify_code = serializers.CharField(read_only=True, help_text='회원 가입시 생성되는 인증 코드')
 
-    def validate_username(self, username):
+    def validate_username(self, username: str) -> str:
+        """
+        유저이름의 유효성을 검사.\n
+        2~4자의 유효한 한글이름을 판단한다.
+        """
         regex = re.compile('^[가-힣]{2,4}$')
         match_obj = regex.match(username)
 
@@ -21,13 +25,21 @@ class SignUpSerializer(serializers.ModelSerializer):
 
         return username
 
-    def validate_email(self, email):
+    def validate_email(self, email: str) -> str:
+        """
+        이메일의 유효성을 검사.\n
+        존재하는 이메일인지 아닌지를 검사한다.
+        """
         if User.objects.filter(email=email).exists():
             raise serializers.ValidationError('This email already exists.')
 
         return email
 
-    def validate_password(self, password):
+    def validate_password(self, password: str) -> str:
+        """
+        비밀번호의 유효성을 검사.\n
+        8자리가 넘으며 영어 및 특수문자 한개 이상이 포함되었는지를 검사한다.
+        """
         regex = re.compile('^(?=.*[A-Za-z])(?=.*\d)(?=.*[$@$!%*#?&])[A-Za-z\d$@$!%*#?&]{8,}$')
         match_obj = regex.match(password)
 
