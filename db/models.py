@@ -1,7 +1,9 @@
 import random
 import string
 
-from django.contrib.auth.models import AbstractBaseUser, BaseUserManager
+from django.contrib.auth.models import (
+    AbstractBaseUser, BaseUserManager, User
+)
 from django.db import models
 
 
@@ -20,8 +22,17 @@ class UserActiveType(models.Model):
 
 
 class UserManager(BaseUserManager):
-    def create_user(self, username: str, email: str, password: str, nickname=None):
-        verify_code = ''.join([random.choice(string.digits) for _ in range(6)])
+    def create_user(
+        self, 
+        username: str, 
+        email: str, 
+        password: str, 
+        nickname: str | None = None
+    ) -> User:
+        """
+        유저를 생성하는 함수.
+        """
+        verify_code = ''.join(random.choices(string.digits, k=6))
         user = self.model(
             username=username,
             email=email,
@@ -34,7 +45,16 @@ class UserManager(BaseUserManager):
 
         return user
 
-    def create_superuser(self, email: str, password: str, username: str, nickname=None):
+    def create_superuser(
+        self, 
+        email: str, 
+        password: str, 
+        username: str, 
+        nickname: str | None = None
+    ) -> User:
+        """
+        어드민 유저를 생성하는 함수.
+        """
         user = self.create_user(
             email=email,
             password=password,
