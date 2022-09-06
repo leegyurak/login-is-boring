@@ -30,6 +30,10 @@ class EmailVerifyView(GenericAPIView):
     @transaction.atomic()
     def post(self, request, *args, **kwargs):
         qs = self.filter_queryset(super().get_queryset())
+        
+        if not qs.exists():
+            return Response(status=status.HTTP_404_NOT_FOUND)
+        
         user = qs.first()
 
         serializer = self.get_serializer(user, data=request.data)
