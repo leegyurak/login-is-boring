@@ -3,6 +3,8 @@ import re
 from django.contrib.auth import get_user_model
 from rest_framework import serializers
 
+from db.models import UserActiveType
+
 
 User = get_user_model()
 
@@ -68,7 +70,7 @@ class EmailVerifySerializer(serializers.Serializer):
             raise serializers.ValidationError({'detail': 'This user is already verified.'})
 
         if instance.verify_code == verify_code:
-            instance.active_type_id = 2
+            instance.active_type_id = UserActiveType.TYPES.ACTIVE.value
             instance.verify_code = None
 
             instance.save(update_fields=('active_type', 'verify_code'))

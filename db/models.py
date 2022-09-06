@@ -8,7 +8,7 @@ from django.db import models
 
 
 class UserActiveType(models.Model):
-    class _TYPES(models.IntegerChoices):
+    class TYPES(models.IntegerChoices):
         DEACTIVE = 1
         ACTIVE = 2
         SECESSION = 3
