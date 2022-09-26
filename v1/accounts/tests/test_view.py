@@ -111,3 +111,71 @@ class TestSignUpView:
         assert response.status_code == 201
         assert len(created_user.verify_code) == 6
         assert created_user.active_type_id == UserActiveType.TYPES.DEACTIVE.value
+
+
+@pytest.mark.django_db
+class TestEmailVerifyView:
+
+    @pytest.fixture(autouse=True)
+    def setUpClass(self):
+        self.url = '/v1/accounts/email-verify'
+        self.deactive_user = baker.make(
+            User, username='테스트', email='test1@test.devgyurak', 
+            nickname='미인증 테스트 유저', verify_code='000000', active_type_id=UserActiveType.TYPES.DEACTIVE.value
+        )
+        self.active_user = baker.make(
+            User, username='테스트', email='test2@test.devgyurak', 
+            nickname='인증 테스트 유저', active_type_id=UserActiveType.TYPES.ACTIVE.value
+        )
+
+        yield
+
+        User.objects.all().delete()
+
+    def test_존재하지않는유저이메일인증(self, client):
+        payload = {
+            'verify_code': '000000'
+        }
+
+        response = client.post(
+            f'{self.url}?email=test@test.devgyurak',
+            payload
+        )
+
+        assert response.status_code == 404
+
+    def test_유저이메일인증(self, client):
+        payload = {
+            'verify_code': '000000'
+        }
+
+        response = client.post(
+            f'{self.url}?email={self.deactive_user.email}',
+            payload
+        )
+
+        assert response.status_code == 200
+
+    def test_이미인증된유저이메일인증(self, client):
+        payload = {
+            'verify_code': '000000'
+        }
+
+        response = client.post(
+            f'{self.url}?email={self.active_user.email}',
+            payload
+        )
+
+        assert response.status_code == 400
+
+    def test_잘못된인증번호로인증시도(self, client):
+        payload = {
+            'verify_code': '000001'
+        }
+
+        response = client.post(
+            f'{self.url}?email={self.deactive_user.email}',
+            payload
+        )
+
+        assert response.status_code == 400
