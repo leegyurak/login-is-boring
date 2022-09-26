@@ -9,8 +9,8 @@ djangorestframework-simplejwt = "*"
 celery = "*"
 redis = "*"
 django-filter = "*"
-djangorestframework = "<=3.11"
 django = "==3.2.1"
+djangorestframework = "*"
 
 [dev-packages]
 pytest = "*"
