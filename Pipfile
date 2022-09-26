@@ -4,18 +4,20 @@ verify_ssl = true
 name = "pypi"
 
 [packages]
-django = "3.2"
-djangorestframework = "*"
 django-environ = "*"
 djangorestframework-simplejwt = "*"
 celery = "*"
 redis = "*"
 django-filter = "*"
+djangorestframework = "<=3.11"
+django = "==3.2.1"
 
 [dev-packages]
 pytest = "*"
 model-bakery = "*"
 drf-yasg = "*"
+pytest-django = "*"
+mock = "*"
 
 [requires]
 python_version = "3.10"
