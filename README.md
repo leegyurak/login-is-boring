@@ -9,3 +9,7 @@
 4. [Redis](https://redis.io/) (Celery의 [Message broker](https://heodolf.tistory.com/49)로 사용)
 5. [Swagger](https://swagger.io/) (API 문서 및 API 테스트를 위해 사용)
 6. [Pytest](https://docs.pytest.org/en/7.1.x/) (테스트코드를 작성하기 위해 사용)
+
+### 테스트 커버리지 🧮
+2022.09.27 main branch에 merge된 PR 기준 **94%**
+![스크린샷 2022-09-27 오전 3 00 13](https://user-images.githubusercontent.com/62545703/192347768-e3cfd215-e1f7-4769-b3ad-995b5f8547fa.png)
