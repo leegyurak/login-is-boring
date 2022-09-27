@@ -192,13 +192,19 @@ class TestLoginView:
     def setUpClass(self):
         self.url = '/v1/accounts/login'
         self.deactive_user = baker.make(
-            User, username='미인증', email='test1@test.devgyurak', password='test123!',
+            User, username='미인증', email='test1@test.devgyurak',
             active_type_id=UserActiveType.TYPES.DEACTIVE.value
         )
         self.active_user = baker.make(
-            User, username='인증', email='test2@test.devgyurak', password='test123!',
+            User, username='인증', email='test2@test.devgyurak',
             active_type_id=UserActiveType.TYPES.ACTIVE.value
         )
+
+        self.deactive_user.set_password('test123!')
+        self.active_user.set_password('test123!')
+
+        self.deactive_user.save()
+        self.active_user.save()
 
         yield
 
@@ -248,7 +254,7 @@ class TestLoginView:
 
     def test_로그인(self, client):
         payload = {
-            'email': 'test1@test.devgyurak',
+            'email': 'test2@test.devgyurak',
             'password': 'test123!'
         }
 
@@ -261,5 +267,5 @@ class TestLoginView:
         body = response.json()
 
         assert response.status_code == 200
-        assert body.get('access_token') != None
-        assert body.get('refresh_token') != None
+        assert body.get('access_token') is not None
+        assert body.get('refresh_token') is not None
