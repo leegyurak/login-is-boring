@@ -1,7 +1,9 @@
 import re
+from datetime import datetime, timedelta
 
 from django.contrib.auth import get_user_model
 from rest_framework import serializers, exceptions
+from rest_framework_simplejwt.tokens import RefreshToken
 
 from db.models import UserActiveType
 
@@ -104,3 +106,29 @@ class LoginSerializer(serializers.Serializer):
             raise exceptions.AuthenticationFailed(detail='this user is not authenticated.')
 
         return user.get_token()
+
+
+class TokenRefreshSerializer(serializers.Serializer):
+    refresh_token = serializers.CharField(help_text='유저의 리프레시 토큰')
+
+    def validate(self, attrs):
+        validated_data = super().validate(attrs)
+        refresh_token = validated_data.get('refresh_token')
+
+        try:
+            token_obj = RefreshToken(refresh_token)
+        except:
+            raise exceptions.AuthenticationFailed(detail='refresh token is wrong')
+
+        access_token = str(token_obj.access_token)
+        
+        access_token_expiration = datetime.fromtimestamp(
+            token_obj.access_token.payload.get('exp')
+        ).isoformat()
+
+        data = {
+            'access_token': access_token,
+            'access_token_expiration': access_token_expiration,
+        }
+
+        return data
