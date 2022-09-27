@@ -1,7 +1,7 @@
 import re
 
 from django.contrib.auth import get_user_model
-from rest_framework import serializers
+from rest_framework import serializers, exceptions
 
 from db.models import UserActiveType
 
@@ -78,3 +78,29 @@ class EmailVerifySerializer(serializers.Serializer):
             raise serializers.ValidationError({'detail': 'verify code is not correct.'})
 
         return instance
+
+
+class LoginSerializer(serializers.Serializer):
+    email = serializers.EmailField(write_only=True, help_text='유저의 이메일')
+    password = serializers.CharField(write_only=True, help_text='유저의 비밀번호')
+
+    def validate(self, attrs):
+        validated_data = super().validate(attrs)
+
+        email = validated_data.get('email')
+        password = validated_data.get('password')
+
+        users = User.objects.filter(email=email)
+
+        if not users.exists():
+            raise exceptions.NotFound(detail='user does not exist')
+        
+        user = users.first()
+
+        if not user.check_password(password):
+            raise exceptions.AuthenticationFailed(detail='password does not match')
+        
+        if user.active_type_id == UserActiveType.TYPES.DEACTIVE.value:
+            raise exceptions.AuthenticationFailed(detail='this user is not authenticated.')
+
+        return user.get_token()

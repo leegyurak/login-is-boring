@@ -6,7 +6,9 @@ from rest_framework import status
 from rest_framework.generics import GenericAPIView
 from rest_framework.response import Response
 
-from v1.accounts.serializers import SignUpSerializer, EmailVerifySerializer
+from v1.accounts.serializers import (
+    SignUpSerializer, EmailVerifySerializer, LoginSerializer
+)
 from v1.accounts.tasks import task_send_sign_up_verify_code_email
 
 User = get_user_model()
@@ -78,3 +80,32 @@ class EmailVerifyView(GenericAPIView):
         serializer.is_valid(raise_exception=True)
         serializer.save()
         return Response({'detail': 'success to verfiy'}, status=status.HTTP_200_OK)
+
+
+@method_decorator(
+    name='post',
+    decorator=swagger_auto_schema(
+        tags=['login'],
+        operation_summary='로그인',
+        responses={
+            200: '로그인 성공.',
+            400: '잘못된 데이터. (형식에 맞지 않거나 중복된 데이터)',
+            401: '인증되지 않은 유저. (잘못된 비밀번호 및 이메일 미인증 유저)',
+            404: '해당하는 계정 정보를 찾을 수 없음.'
+        }
+    )
+)
+class LoginView(GenericAPIView):
+    serializer_class = LoginSerializer
+
+    @transaction.atomic() # exception 발생시 blacklist에 refresh token이 기록되지 않게하기 위함.
+    def post(self, request, *args, **kwargs):
+        """
+        로그인 API.\n
+        이메일과 비밀번호를 body에 담아 전송하면,
+        response로 access token, refresh token 그리고 각 토큰의 만료일을 넘겨준다.
+        """
+        serializer = self.get_serializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+
+        return Response(serializer.validated_data, status=status.HTTP_200_OK)

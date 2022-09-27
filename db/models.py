@@ -5,6 +5,8 @@ from django.contrib.auth.models import (
     AbstractBaseUser, BaseUserManager, User
 )
 from django.db import models
+from datetime import datetime, timedelta
+from rest_framework_simplejwt.tokens import RefreshToken
 
 
 class UserActiveType(models.Model):
@@ -89,3 +91,20 @@ class User(AbstractBaseUser):
 
     def has_module_perms(self, app_label):
         return True
+
+    def get_token(self) -> dict[str, str]:
+        """
+        유저 정보를 받아 엑세스 토큰 및 리프레시 토큰을 return하는 함수.
+        """
+        token = RefreshToken.for_user(self)
+        access_token_expiration = (datetime.now() + timedelta(hours=4)).isoformat()
+        refresh_token_expiration = (datetime.now() + timedelta(days=7)).isoformat()
+
+        data = {
+            'access_token': str(token.access_token),
+            'access_token_expiration': access_token_expiration,
+            'refresh_token': str(token),
+            'refresh_token_expiration': refresh_token_expiration
+        }
+
+        return data
