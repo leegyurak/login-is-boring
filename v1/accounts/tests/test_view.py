@@ -245,3 +245,21 @@ class TestLoginView:
         )
 
         assert response.status_code == 401
+
+    def test_로그인(self, client):
+        payload = {
+            'email': 'test1@test.devgyurak',
+            'password': 'test123!'
+        }
+
+        response = client.post(
+            self.url,
+            payload,
+            content_type='application/json'
+        )
+
+        body = response.json()
+
+        assert response.status_code == 200
+        assert body.get('access_token') != None
+        assert body.get('refresh_token') != None
