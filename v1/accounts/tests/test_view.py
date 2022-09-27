@@ -269,3 +269,62 @@ class TestLoginView:
         assert response.status_code == 200
         assert body.get('access_token') is not None
         assert body.get('refresh_token') is not None
+
+
+@pytest.mark.django_db
+class TestTokenRefreshView:
+
+    @pytest.fixture(autouse=True)
+    def setUpClass(self):
+        self.url = '/v1/accounts/token-refresh'
+        self.user = baker.make(
+            User, username='테스트', email='test@test.devgyurak',
+            active_type_id=UserActiveType.TYPES.ACTIVE.value
+        )
+
+        self.user.set_password('test123!')
+        self.user.save()
+
+        yield
+
+        User.objects.all().delete()
+
+    def test_토큰재발급(self, client):
+        tokens = self.user.get_token()
+
+        expired_access_token = tokens.get('access_token')
+        refresh_token = tokens.get('refresh_token')
+
+        payload = {
+            'refresh_token': refresh_token
+        }
+
+        response = client.post(
+            self.url,
+            payload,
+            content_type='application/json'
+        )
+
+        body = response.json()
+        refreshed_access_token = body.get('access_token')
+
+        assert response.status_code == 200
+        assert expired_access_token != refreshed_access_token
+
+    def test_블랙리스트리프레시토큰사용(self, client):
+        expired_tokens = self.user.get_token()
+        expired_refresh_token = expired_tokens.get('refresh_token')
+
+        self.user.get_token()
+
+        payload = {
+            'refresh_token': expired_refresh_token
+        }
+
+        response = client.post(
+            self.url,
+            payload,
+            content_type='application/json'
+        )
+
+        assert response.status_code == 401
