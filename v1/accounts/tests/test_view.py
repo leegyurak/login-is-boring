@@ -139,7 +139,8 @@ class TestEmailVerifyView:
 
         response = client.post(
             f'{self.url}?email=test@test.devgyurak',
-            payload
+            payload,
+            content_type='application/json'
         )
 
         assert response.status_code == 404
@@ -151,7 +152,8 @@ class TestEmailVerifyView:
 
         response = client.post(
             f'{self.url}?email={self.deactive_user.email}',
-            payload
+            payload,
+            content_type='application/json'
         )
 
         assert response.status_code == 200
@@ -163,7 +165,8 @@ class TestEmailVerifyView:
 
         response = client.post(
             f'{self.url}?email={self.active_user.email}',
-            payload
+            payload,
+            content_type='application/json'
         )
 
         assert response.status_code == 400
@@ -175,7 +178,70 @@ class TestEmailVerifyView:
 
         response = client.post(
             f'{self.url}?email={self.deactive_user.email}',
-            payload
+            payload,
+            content_type='application/json'
         )
 
         assert response.status_code == 400
+
+
+@pytest.mark.django_db
+class TestLoginView:
+
+    @pytest.fixture(autouse=True)
+    def setUpClass(self):
+        self.url = '/v1/accounts/login'
+        self.deactive_user = baker.make(
+            User, username='미인증', email='test1@test.devgyurak', password='test123!',
+            active_type_id=UserActiveType.TYPES.DEACTIVE.value
+        )
+        self.active_user = baker.make(
+            User, username='인증', email='test2@test.devgyurak', password='test123!',
+            active_type_id=UserActiveType.TYPES.ACTIVE.value
+        )
+
+        yield
+
+        User.objects.all().delete()
+
+    def test_존재하지않는계정로그인(self, client):
+        payload = {
+            'email': 'test@test.devgyurak',
+            'password': 'test123!'
+        }
+
+        response = client.post(
+            self.url,
+            payload,
+            content_type='application/json'
+        )
+
+        assert response.status_code == 404
+
+    def test_미인증유저로그인(self, client):
+        payload = {
+            'email': 'test1@test.devgyurak',
+            'password': 'test123!'
+        }
+
+        response = client.post(
+            self.url,
+            payload,
+            content_type='application/json'
+        )
+
+        assert response.status_code == 401
+
+    def test_잘못된비밀번호로그인(self, client):
+        payload = {
+            'email': 'test1@test.devgyurak',
+            'password': 'test123!!'
+        }
+
+        response = client.post(
+            self.url,
+            payload,
+            content_type='application/json'
+        )
+
+        assert response.status_code == 401
