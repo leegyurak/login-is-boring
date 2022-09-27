@@ -2,6 +2,7 @@ import pytest
 from model_bakery import baker
 
 from django.contrib.auth import get_user_model
+from rest_framework_simplejwt.tokens import BlacklistedToken
 
 from db.models import UserActiveType
 
@@ -311,14 +312,12 @@ class TestTokenRefreshView:
         assert response.status_code == 200
         assert expired_access_token != refreshed_access_token
 
-    def test_블랙리스트리프레시토큰사용(self, client):
-        expired_tokens = self.user.get_token()
-        expired_refresh_token = expired_tokens.get('refresh_token')
-
-        self.user.get_token()
+    def test_잘못된토큰으로재발급시도(self, client):
+        tokens = self.user.get_token()
+        forgery_refresh_token = tokens.get('refresh_token')[:-1]
 
         payload = {
-            'refresh_token': expired_refresh_token
+            'refresh_token': forgery_refresh_token
         }
 
         response = client.post(

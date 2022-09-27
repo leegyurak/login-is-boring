@@ -5,9 +5,10 @@ from drf_yasg.utils import swagger_auto_schema
 from rest_framework import status
 from rest_framework.generics import GenericAPIView
 from rest_framework.response import Response
+from rest_framework_simplejwt.tokens import BlacklistedToken, BlacklistMixin
 
 from v1.accounts.serializers import (
-    SignUpSerializer, EmailVerifySerializer, LoginSerializer
+    SignUpSerializer, EmailVerifySerializer, LoginSerializer, TokenRefreshSerializer
 )
 from v1.accounts.tasks import task_send_sign_up_verify_code_email
 
@@ -95,7 +96,7 @@ class EmailVerifyView(GenericAPIView):
         }
     )
 )
-class LoginView(GenericAPIView):
+class LoginView(BlacklistMixin, GenericAPIView):
     serializer_class = LoginSerializer
 
     @transaction.atomic() # exception 발생시 blacklist에 refresh token이 기록되지 않게하기 위함.
@@ -104,6 +105,33 @@ class LoginView(GenericAPIView):
         로그인 API.\n
         이메일과 비밀번호를 body에 담아 전송하면,
         response로 access token, refresh token 그리고 각 토큰의 만료일을 넘겨준다.
+        """
+        serializer = self.get_serializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+
+        return Response(serializer.validated_data, status=status.HTTP_200_OK)
+
+
+@method_decorator(
+    name='post',
+    decorator=swagger_auto_schema(
+        tags=['login'],
+        operation_summary='엑세스 토큰 재발급',
+        responses={
+            200: '로그인 성공.',
+            400: '잘못된 데이터. (형식에 맞지 않거나 중복된 데이터)',
+            401: '잘못된 토큰'
+        }
+    )
+)
+class TokenRefreshView(GenericAPIView):
+    serializer_class = TokenRefreshSerializer
+
+    def post(self, request, *args, **kwargs):
+        """
+        토큰 리프레시 API.\n
+        유저의 리프레시 토큰을 body에 담아 전송하면,
+        새로운 access token과 그 만료일을 넘겨준다. 
         """
         serializer = self.get_serializer(data=request.data)
         serializer.is_valid(raise_exception=True)

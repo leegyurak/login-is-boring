@@ -97,14 +97,17 @@ class User(AbstractBaseUser):
         유저 정보를 받아 엑세스 토큰 및 리프레시 토큰을 return하는 함수.
         """
         token = RefreshToken.for_user(self)
-        access_token_expiration = (datetime.now() + timedelta(hours=4)).isoformat()
         refresh_token_expiration = (datetime.now() + timedelta(days=7)).isoformat()
 
         data = {
             'access_token': str(token.access_token),
-            'access_token_expiration': access_token_expiration,
+            'access_token_expiration': datetime.fromtimestamp(
+                token.access_token.payload.get('exp')
+            ).isoformat(),
             'refresh_token': str(token),
-            'refresh_token_expiration': refresh_token_expiration
+            'refresh_token_expiration': datetime.fromtimestamp(
+                token.payload.get('exp')
+            ).isoformat()
         }
 
         return data
