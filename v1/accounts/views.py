@@ -55,6 +55,11 @@ class EmailVerifyView(GenericAPIView):
     serializer_class = EmailVerifySerializer
     filterset_fields = ('email',)
 
+    def get_queryset(self):
+        queryset = self.filter_queryset(super().get_queryset())
+        
+        return queryset
+
     @transaction.atomic()
     def post(self, request, *args, **kwargs):
         """
@@ -62,7 +67,7 @@ class EmailVerifyView(GenericAPIView):
         이메일로 전송된 코드를 body에 담아 전송한다.\n
         이때 이메일은 query param으로 넘긴다.
         """
-        qs = self.filter_queryset(super().get_queryset())
+        qs = self.get_queryset()
         
         if not qs.exists():
             return Response(status=status.HTTP_404_NOT_FOUND)
