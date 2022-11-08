@@ -68,7 +68,7 @@ class EmailVerifySerializer(serializers.Serializer):
     def update(self, instance, validated_data):
         verify_code = validated_data['verify_code']
 
-        if instance.active_type_id == 2:
+        if instance.active_type_id == UserActiveType.TYPES.ACTIVE.value:
             raise serializers.ValidationError({'detail': 'This user is already verified.'})
 
         if instance.verify_code == verify_code:

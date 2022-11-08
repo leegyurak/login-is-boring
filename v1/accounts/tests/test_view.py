@@ -2,7 +2,6 @@ import pytest
 from model_bakery import baker
 
 from django.contrib.auth import get_user_model
-from rest_framework_simplejwt.tokens import BlacklistedToken
 
 from db.models import UserActiveType
 

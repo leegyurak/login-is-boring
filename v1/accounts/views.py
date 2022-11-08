@@ -12,6 +12,7 @@ from v1.accounts.serializers import (
 )
 from v1.accounts.tasks import task_send_sign_up_verify_code_email
 
+
 User = get_user_model()
 
 
@@ -74,7 +75,7 @@ class EmailVerifyView(GenericAPIView):
         
         if not qs.exists():
             return Response(status=status.HTTP_404_NOT_FOUND)
-        
+
         user = qs.first()
 
         serializer = self.get_serializer(user, data=request.data)
