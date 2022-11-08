@@ -1,3 +1,4 @@
+from datetime import datetime, timedelta
 import random
 import string
 
@@ -5,7 +6,7 @@ from django.contrib.auth.models import (
     AbstractBaseUser, BaseUserManager, User
 )
 from django.db import models
-from datetime import datetime, timedelta
+from django.core.exceptions import PermissionDenied
 from rest_framework_simplejwt.tokens import RefreshToken
 
 
@@ -96,7 +97,7 @@ class User(AbstractBaseUser):
         """
         유저 정보를 받아 엑세스 토큰 및 리프레시 토큰을 return하는 함수.
         """
-        if self.active_type == UserActiveType.TYPES.ACTIVE.value:
+        if self.active_type_id == UserActiveType.TYPES.ACTIVE.value:
             token = RefreshToken.for_user(self)
             refresh_token_expiration = (datetime.now() + timedelta(days=7)).isoformat()
 
@@ -113,4 +114,4 @@ class User(AbstractBaseUser):
 
             return data
         else:
-            raise Exception
+            raise PermissionDenied('this user is not authenticated.')

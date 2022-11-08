@@ -73,10 +73,10 @@ class EmailVerifyView(GenericAPIView):
         """
         qs = self.get_queryset()
         
-        try:
-            user = qs.first()
-        except User.DoesNotExist:
+        if not qs.exists():
             return Response(status=status.HTTP_404_NOT_FOUND)
+
+        user = qs.first()
 
         serializer = self.get_serializer(user, data=request.data)
         serializer.is_valid(raise_exception=True)
