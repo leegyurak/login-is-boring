@@ -5,7 +5,6 @@ from drf_yasg.utils import swagger_auto_schema
 from rest_framework import status
 from rest_framework.generics import GenericAPIView
 from rest_framework.response import Response
-from rest_framework_simplejwt.tokens import BlacklistedToken, BlacklistMixin
 
 from v1.accounts.serializers import (
     SignUpSerializer, EmailVerifySerializer, LoginSerializer, TokenRefreshSerializer
@@ -97,7 +96,7 @@ class EmailVerifyView(GenericAPIView):
         }
     )
 )
-class LoginView(BlacklistMixin, GenericAPIView):
+class LoginView(GenericAPIView):
     serializer_class = LoginSerializer
 
     @transaction.atomic() # exception 발생시 blacklist에 refresh token이 기록되지 않게하기 위함.
