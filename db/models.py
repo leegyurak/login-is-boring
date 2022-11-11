@@ -99,7 +99,6 @@ class User(AbstractBaseUser):
         """
         if self.active_type_id == UserActiveType.TYPES.ACTIVE.value:
             token = RefreshToken.for_user(self)
-            refresh_token_expiration = (datetime.now() + timedelta(days=7)).isoformat()
 
             data = {
                 'access_token': str(token.access_token),
